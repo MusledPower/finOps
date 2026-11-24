@@ -8,11 +8,10 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"time"
-
 	"task-decomposer-backend/internal/domain"
 	"task-decomposer-backend/internal/provider"
 	"task-decomposer-backend/internal/repository"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -27,6 +26,20 @@ type PlanService struct {
 func NewPlanService(r *repository.Repository, p provider.Planner, max int64) *PlanService {
 	return &PlanService{r, p, max}
 }
+
+// Create godoc
+// @Summary      Create plan
+// @Description  Generates a plan based on the provided epic, preferences and context
+// @Tags         Plans
+// @Accept       json
+// @Produce      json
+// @Param        request body domain.PlanRequest true "Plan creation request"
+// @Success      200 {object} domain.PlanResponse
+// @Failure      400 {object} ErrorResponse "Validation error"
+// @Failure      422 {object} ErrorResponse "Model output validation failed"
+// @Failure      500 {object} ErrorResponse "Internal server error"
+// @Failure      502 {object} ErrorResponse "Planner provider unavailable"
+// @Router       /plans [post]
 func (s *PlanService) Create(w http.ResponseWriter, r *http.Request) {
 	r.Body = http.MaxBytesReader(w, r.Body, s.maxBytes)
 	var req domain.PlanRequest
@@ -90,6 +103,16 @@ func (s *PlanService) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	writeJSON(w, 200, out)
 }
+
+// Get godoc
+// @Summary      Get plan
+// @Description  Retrieves a previously generated plan by ID
+// @Tags         Plans
+// @Produce      json
+// @Param        id path string true "Plan ID"
+// @Success      200 {object} domain.PlanResponse
+// @Failure      404 {object} ErrorResponse "Plan not found"
+// @Router       /plans/{id} [get]
 func (s *PlanService) Get(w http.ResponseWriter, r *http.Request) {
 	b, err := s.repo.Get(r.Context(), chi.URLParam(r, "id"))
 	if err != nil {
@@ -100,9 +123,27 @@ func (s *PlanService) Get(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(200)
 	_, _ = w.Write(b)
 }
-func writeError(w http.ResponseWriter, status int, code, msg string) {
-	writeJSON(w, status, map[string]any{"error": map[string]any{"code": code, "message": msg, "retryable": status >= 500}})
+
+// ErrorResponse represents API error response
+type ErrorResponse struct {
+	Error ErrorDetail `json:"error"`
 }
+
+// ErrorDetail represents error details
+type ErrorDetail struct {
+	Code      string `json:"code" example:"VALIDATION_ERROR"`
+	Message   string `json:"message" example:"Invalid JSON request"`
+	Retryable bool   `json:"retryable" example:"false"`
+}
+
+func writeError(w http.ResponseWriter, status int, code, msg string) {
+	writeJSON(
+		w,
+		status,
+		map[string]any{"error": map[string]any{"code": code, "message": msg, "retryable": status >= 500}},
+	)
+}
+
 func writeJSON(w http.ResponseWriter, status int, v any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)

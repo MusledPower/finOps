@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	_ "task-decomposer-backend/docs"
 	"task-decomposer-backend/internal/config"
 	"task-decomposer-backend/internal/database"
 	"task-decomposer-backend/internal/handler"
@@ -19,7 +20,25 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
+
+// @title           Task Decomposer API
+// @version         1.0
+// @description     API for AI-powered task decomposition and plan generation.
+// @BasePath        /
+// @schemes         http https
+//
+// @tag.name        System
+// @tag.description System health and capabilities
+//
+// @tag.name        Plans
+// @tag.description Plan generation and retrieval
+//
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Enter your bearer token with the Bearer prefix. Example: Bearer your-token
 
 func main() {
 	cfg := config.Load()
@@ -42,7 +61,14 @@ func main() {
 	r.Use(chimiddleware.RealIP)
 	r.Use(chimiddleware.Recoverer)
 	r.Use(appmiddleware.RequestID)
+
 	r.Get("/health", handler.Health)
+	r.Get(
+		"/docs/*", httpSwagger.Handler(
+			httpSwagger.URL("/docs/doc.json"),
+		),
+	)
+
 	r.Group(
 		func(api chi.Router) {
 			api.Use(appmiddleware.BearerAuth(cfg.BearerToken))

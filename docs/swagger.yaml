@@ -1,0 +1,366 @@
+basePath: /
+definitions:
+  domain.AllowedModel:
+    properties:
+      displayName:
+        type: string
+      id:
+        type: string
+      params:
+        items:
+          type: string
+        type: array
+    type: object
+  domain.Catalog:
+    properties:
+      fetchedAt:
+        type: string
+      source:
+        type: string
+    type: object
+  domain.ClarificationAnswer:
+    properties:
+      answer:
+        type: string
+      id:
+        type: string
+    type: object
+  domain.ContextRef:
+    properties:
+      content:
+        type: string
+      contentHash:
+        type: string
+      endLine:
+        type: integer
+      id:
+        type: string
+      path:
+        type: string
+      startLine:
+        type: integer
+    type: object
+  domain.Epic:
+    properties:
+      acceptanceCriteria:
+        items:
+          type: string
+        type: array
+      constraints:
+        items:
+          type: string
+        type: array
+      nonGoals:
+        items:
+          type: string
+        type: array
+      text:
+        type: string
+    type: object
+  domain.Meta:
+    properties:
+      cost:
+        type: number
+      latencyMs:
+        type: integer
+      plannerModel:
+        type: string
+      policyVersion:
+        type: string
+      promptVersion:
+        type: string
+      providerCalls:
+        type: integer
+      usage:
+        $ref: '#/definitions/domain.Usage'
+    type: object
+  domain.Plan:
+    properties:
+      assumptions:
+        items:
+          type: string
+        type: array
+      id:
+        type: string
+      summary:
+        type: string
+      tasks:
+        items:
+          $ref: '#/definitions/domain.Task'
+        type: array
+      version:
+        type: integer
+      warnings:
+        items:
+          type: string
+        type: array
+    type: object
+  domain.PlanRequest:
+    properties:
+      allowedModels:
+        items:
+          $ref: '#/definitions/domain.AllowedModel'
+        type: array
+      catalog:
+        $ref: '#/definitions/domain.Catalog'
+      clarificationAnswers:
+        items:
+          $ref: '#/definitions/domain.ClarificationAnswer'
+        type: array
+      context:
+        items:
+          $ref: '#/definitions/domain.ContextRef'
+        type: array
+      epic:
+        $ref: '#/definitions/domain.Epic'
+      preference:
+        type: string
+      projectProfile:
+        $ref: '#/definitions/domain.ProjectProfile'
+      requestId:
+        type: string
+      schemaVersion:
+        type: string
+    type: object
+  domain.PlanResponse:
+    properties:
+      kind:
+        type: string
+      meta:
+        $ref: '#/definitions/domain.Meta'
+      plan:
+        $ref: '#/definitions/domain.Plan'
+      questions:
+        items:
+          $ref: '#/definitions/domain.Question'
+        type: array
+      requestId:
+        type: string
+      schemaVersion:
+        type: string
+    type: object
+  domain.ProjectProfile:
+    properties:
+      stack:
+        items:
+          type: string
+        type: array
+      text:
+        type: string
+    type: object
+  domain.Question:
+    properties:
+      id:
+        type: string
+      reason:
+        type: string
+      text:
+        type: string
+    type: object
+  domain.Task:
+    properties:
+      acceptanceCriteria:
+        items:
+          type: string
+        type: array
+      assumptions:
+        items:
+          type: string
+        type: array
+      contextRefs:
+        items:
+          type: string
+        type: array
+      dependsOn:
+        items:
+          type: string
+        type: array
+      expectedOutputs:
+        items:
+          type: string
+        type: array
+      goal:
+        type: string
+      id:
+        type: string
+      recommendationReasons:
+        items:
+          type: string
+        type: array
+      recommendationSource:
+        type: string
+      recommendedModelId:
+        type: string
+      recommendedParams:
+        items:
+          type: string
+        type: array
+      risk:
+        type: string
+      title:
+        type: string
+    type: object
+  domain.Usage:
+    properties:
+      inputTokens:
+        type: integer
+      outputTokens:
+        type: integer
+    type: object
+  handler.CapabilitiesLimits:
+    properties:
+      contextChars:
+        example: 36000
+        type: integer
+      contextSources:
+        example: 8
+        type: integer
+      epicChars:
+        example: 10000
+        type: integer
+      otherChars:
+        example: 6000
+        type: integer
+      requestBytes:
+        example: 262144
+        type: integer
+    type: object
+  handler.CapabilitiesResponse:
+    properties:
+      limits:
+        $ref: '#/definitions/handler.CapabilitiesLimits'
+      policyVersion:
+        example: policy-v1
+        type: string
+      schemaVersion:
+        example: "1.0"
+        type: string
+    type: object
+  service.ErrorDetail:
+    properties:
+      code:
+        example: VALIDATION_ERROR
+        type: string
+      message:
+        example: Invalid JSON request
+        type: string
+      retryable:
+        example: false
+        type: boolean
+    type: object
+  service.ErrorResponse:
+    properties:
+      error:
+        $ref: '#/definitions/service.ErrorDetail'
+    type: object
+info:
+  contact: {}
+  description: API for AI-powered task decomposition and plan generation.
+  title: Task Decomposer API
+  version: "1.0"
+paths:
+  /capabilities:
+    get:
+      description: Returns API schema version, limits and policy version
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.CapabilitiesResponse'
+      summary: Get API capabilities
+      tags:
+      - System
+  /health:
+    get:
+      description: Checks whether the service is running
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Service is healthy
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Health check
+      tags:
+      - System
+  /plans:
+    post:
+      consumes:
+      - application/json
+      description: Generates a plan based on the provided epic, preferences and context
+      parameters:
+      - description: Plan creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.PlanRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.PlanResponse'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/service.ErrorResponse'
+        "422":
+          description: Model output validation failed
+          schema:
+            $ref: '#/definitions/service.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/service.ErrorResponse'
+        "502":
+          description: Planner provider unavailable
+          schema:
+            $ref: '#/definitions/service.ErrorResponse'
+      summary: Create plan
+      tags:
+      - Plans
+  /plans/{id}:
+    get:
+      description: Retrieves a previously generated plan by ID
+      parameters:
+      - description: Plan ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.PlanResponse'
+        "404":
+          description: Plan not found
+          schema:
+            $ref: '#/definitions/service.ErrorResponse'
+      summary: Get plan
+      tags:
+      - Plans
+schemes:
+- http
+- https
+securityDefinitions:
+  BearerAuth:
+    description: 'Enter your bearer token with the Bearer prefix. Example: Bearer
+      your-token'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
+tags:
+- description: System health and capabilities
+  name: System
+- description: Plan generation and retrieval
+  name: Plans
