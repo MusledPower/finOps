@@ -1,0 +1,102 @@
+
+# =========================
+# Go
+# =========================
+
+# Compiled binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+/bin/
+/dist/
+
+# Go workspace
+go.work
+go.work.sum
+
+# Vendor (раскомментировать, если vendor не нужно хранить в Git)
+# vendor/
+
+# =========================
+# Environment variables
+# =========================
+
+.env
+.env.*
+!.env.example
+
+# Secrets and credentials
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# =========================
+# IDE
+# =========================
+
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# =========================
+# OS
+# =========================
+
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =========================
+# Logs
+# =========================
+
+*.log
+logs/
+
+# =========================
+# Test and coverage
+# =========================
+
+coverage.out
+coverage.html
+*.coverprofile
+
+# =========================
+# Temporary files
+# =========================
+
+tmp/
+temp/
+.cache/
+*.tmp
+
+# =========================
+# Database
+# =========================
+
+*.sqlite
+*.sqlite3
+*.db
+
+# PostgreSQL local data
+postgres-data/
+pgdata/
+
+# =========================
+# Docker
+# =========================
+
+.docker/
+
+# =========================
+# Generated documentation
+# =========================
+
